@@ -1,0 +1,102 @@
+tr: 1.49
+dummy_scans: 7
+
+# Shape matching.
+# Conditions in trial_type: SSS, SDD, SNN, DSD, DDD, DDS, DNN
+# (S = same, D = different, N = neutral across the compared dimensions).
+
+regressors:
+  SSS:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'SSS'
+      and key_press == correct_response and response_time >= 0.2
+
+  SDD:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'SDD'
+      and key_press == correct_response and response_time >= 0.2
+
+  SNN:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'SNN'
+      and key_press == correct_response and response_time >= 0.2
+
+  DSD:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'DSD'
+      and key_press == correct_response and response_time >= 0.2
+
+  DDD:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'DDD'
+      and key_press == correct_response and response_time >= 0.2
+
+  DDS:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'DDS'
+      and key_press == correct_response and response_time >= 0.2
+
+  DNN:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'DNN'
+      and key_press == correct_response and response_time >= 0.2
+
+  response_time:
+    amplitude: 1
+    duration: response_time
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press == correct_response and response_time >= 0.2
+
+  omission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press == -1
+
+  commission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press != correct_response and key_press != -1
+      and response_time >= 0.2
+
+  rt_fast:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and response_time >= 0 and response_time < 0.2
+
+  break_with_performance_feedback:
+    amplitude: 1
+    duration: duration
+    subset: "trial_id in ('break', 'break_with_performance_feedback')"
+
+contrasts:
+  task-baseline: "1/7 * (SSS + SDD + SNN + DSD + DDD + DDS + DNN)"
+  main_vars: "1/3 * (SDD + DDD + DDS) - 0.5 * (SNN + DNN)"
+  SSS: "SSS"
+  SDD: "SDD"
+  SNN: "SNN"
+  DSD: "DSD"
+  DDD: "DDD"
+  DDS: "DDS"
+  DNN: "DNN"
+  response_time: "response_time"

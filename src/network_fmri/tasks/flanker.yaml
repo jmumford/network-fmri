@@ -1,0 +1,59 @@
+tr: 1.49
+dummy_scans: 7
+
+# Eriksen flanker.
+# Conditions in trial_type: congruent, incongruent.
+
+regressors:
+  congruent:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'congruent'
+      and key_press == correct_response and response_time >= 0.2
+
+  incongruent:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'incongruent'
+      and key_press == correct_response and response_time >= 0.2
+
+  response_time:
+    amplitude: 1
+    duration: response_time
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press == correct_response and response_time >= 0.2
+
+  omission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press == -1
+
+  commission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press != correct_response and key_press != -1
+      and response_time >= 0.2
+
+  rt_fast:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and response_time >= 0 and response_time < 0.2
+
+  break_with_performance_feedback:
+    amplitude: 1
+    duration: duration
+    subset: "trial_id in ('break', 'break_with_performance_feedback')"
+
+contrasts:
+  incongruent-congruent: "incongruent - congruent"
+  task-baseline: "0.5 * congruent + 0.5 * incongruent"
+  response_time: "response_time"

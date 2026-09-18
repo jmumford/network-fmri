@@ -1,0 +1,74 @@
+tr: 1.49
+dummy_scans: 7
+
+# N-back working memory.
+# Conditions are trial_type (match / mismatch) crossed with delay (1 / 2).
+
+regressors:
+  mismatch_1back:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'mismatch' and delay == 1
+      and key_press == correct_response and response_time >= 0.2
+
+  match_1back:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'match' and delay == 1
+      and key_press == correct_response and response_time >= 0.2
+
+  mismatch_2back:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'mismatch' and delay == 2
+      and key_press == correct_response and response_time >= 0.2
+
+  match_2back:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'match' and delay == 2
+      and key_press == correct_response and response_time >= 0.2
+
+  response_time:
+    amplitude: 1
+    duration: response_time
+    subset: >-
+      trial_id == 'test_trial' and trial_type != 'n/a'
+      and key_press == correct_response and response_time >= 0.2
+
+  omission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press == -1
+
+  commission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press != correct_response and key_press != -1
+      and response_time >= 0.2
+
+  rt_fast:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and response_time >= 0 and response_time < 0.2
+
+  break_with_performance_feedback:
+    amplitude: 1
+    duration: duration
+    subset: "trial_id in ('break', 'break_with_performance_feedback')"
+
+contrasts:
+  twoBack-oneBack: "0.5 * (mismatch_2back + match_2back - mismatch_1back - match_1back)"
+  match-mismatch: "0.5 * (match_2back + match_1back - mismatch_2back - mismatch_1back)"
+  task-baseline: "0.25 * (mismatch_1back + match_1back + mismatch_2back + match_2back)"
+  response_time: "response_time"

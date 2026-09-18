@@ -1,0 +1,81 @@
+tr: 1.49
+dummy_scans: 7
+
+# Go/No-Go.
+# Conditions in trial_type: go, nogo_success, nogo_failure.
+#
+# RT modelling (Mumford et al. 2023, ConstDurRTDur; biorxiv 528677):
+# the pooled response_time regressor is restricted to correct go responses.
+#   go (correct, RT >= 0.2)  ConstDur + RTDur
+#   nogo_success             ConstDur only -- no response, so no RT
+#   nogo_failure             ConstDur only -- RTs on failed inhibition are
+#                            atypical (partial response programming), so
+#                            modelling them as RT-modulated would bleed
+#                            inhibition-failure variance into the contrasts
+# This keeps nogo_success-go from absorbing RT variance through the go
+# regressor while avoiding RT modelling on trials whose RT is not a clean
+# motor-readiness signal.
+#
+# Every subset is restricted to trial_id == 'test_trial': break rows can
+# retain a condition label without being behavioural trials.
+
+regressors:
+  go:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'go'
+      and key_press == correct_response and response_time >= 0.2
+
+  nogo_success:
+    amplitude: 1
+    duration: duration
+    subset: "trial_id == 'test_trial' and trial_type == 'nogo_success'"
+
+  nogo_failure:
+    amplitude: 1
+    duration: duration
+    subset: "trial_id == 'test_trial' and trial_type == 'nogo_failure'"
+
+  response_time:
+    amplitude: 1
+    duration: response_time
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'go'
+      and key_press == correct_response and response_time >= 0.2
+
+  # Nuisance regressors are restricted to go trials: a successful no-go has
+  # key_press == -1 by design and must not be counted as an omission.
+  go_omission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'go'
+      and key_press == -1
+
+  go_commission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'go'
+      and key_press != correct_response and key_press != -1
+      and response_time >= 0.2
+
+  go_rt_fast:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'go'
+      and response_time >= 0 and response_time < 0.2
+
+  break_with_performance_feedback:
+    amplitude: 1
+    duration: duration
+    subset: "trial_id in ('break', 'break_with_performance_feedback')"
+
+contrasts:
+  go: "go"
+  nogo_success: "nogo_success"
+  nogo_success-go: "nogo_success - go"
+  task-baseline: "1/3 * (go + nogo_success + nogo_failure)"
+  response_time: "response_time"

@@ -1,0 +1,69 @@
+tr: 1.49
+dummy_scans: 7
+
+# Spatial task-switching.
+# Same switch structure as cuedTS, with a spatial judgment.
+# Conditions in trial_type: tstay_cstay, tstay_cswitch, tswitch_cswitch.
+
+regressors:
+  task_stay_cue_stay:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'tstay_cstay'
+      and key_press == correct_response and response_time >= 0.2
+
+  task_stay_cue_switch:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'tstay_cswitch'
+      and key_press == correct_response and response_time >= 0.2
+
+  task_switch_cue_switch:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'tswitch_cswitch'
+      and key_press == correct_response and response_time >= 0.2
+
+  response_time:
+    amplitude: 1
+    duration: response_time
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press == correct_response and response_time >= 0.2
+
+  omission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press == -1
+
+  commission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press != correct_response and key_press != -1
+      and response_time >= 0.2
+
+  rt_fast:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and response_time >= 0 and response_time < 0.2
+
+  break_with_performance_feedback:
+    amplitude: 1
+    duration: duration
+    subset: "trial_id in ('break', 'break_with_performance_feedback')"
+
+contrasts:
+  task_switch_cost: "task_switch_cue_switch - task_stay_cue_switch"
+  cue_switch_cost: "task_stay_cue_switch - task_stay_cue_stay"
+  task_switch_cue_switch-task_stay_cue_stay: "task_switch_cue_switch - task_stay_cue_stay"
+  task-baseline: "1/3 * (task_stay_cue_switch + task_stay_cue_stay + task_switch_cue_switch)"
+  response_time: "response_time"

@@ -1,0 +1,73 @@
+tr: 1.49
+dummy_scans: 7
+
+# Directed forgetting.
+# Probe conditions in trial_type: con (control), pos (remember), neg (forget).
+# memory_and_cue models the memory-set and cue periods, which are separate
+# rows (test_stim / test_cue) with their own durations.
+
+regressors:
+  con:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'con'
+      and key_press == correct_response and response_time >= 0.2
+
+  pos:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'pos'
+      and key_press == correct_response and response_time >= 0.2
+
+  neg:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial' and trial_type == 'neg'
+      and key_press == correct_response and response_time >= 0.2
+
+  memory_and_cue:
+    amplitude: 1
+    duration: duration
+    subset: "trial_id in ('test_stim', 'test_cue')"
+
+  response_time:
+    amplitude: 1
+    duration: response_time
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press == correct_response and response_time >= 0.2
+
+  omission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press == -1
+
+  commission:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and key_press != correct_response and key_press != -1
+      and response_time >= 0.2
+
+  rt_fast:
+    amplitude: 1
+    duration: duration
+    subset: >-
+      trial_id == 'test_trial'
+      and response_time >= 0 and response_time < 0.2
+
+  break_with_performance_feedback:
+    amplitude: 1
+    duration: duration
+    subset: "trial_id in ('break', 'break_with_performance_feedback')"
+
+contrasts:
+  neg-con: "neg - con"
+  task-baseline: "1/4 * (con + pos + neg + memory_and_cue)"
+  response_time: "response_time"
