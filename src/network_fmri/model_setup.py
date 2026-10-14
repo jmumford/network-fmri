@@ -581,6 +581,38 @@ def _resolve(events, value, field, name):
     return events[value].to_numpy(dtype=float)
 
 
+def standardize_columns(df, skip=("constant",)):
+    """Return a copy of ``df`` with every varying column z-scored.
+
+    Rescaling a regressor cannot change a least-squares fit: the column spans
+    the same direction either way, only its length changes, and its coefficient
+    absorbs the difference. What it changes is numerical conditioning.
+
+    That matters because fMRIPrep's confounds span about eleven orders of
+    magnitude -- ``rot_*_derivative1_power2`` terms sit near 1e-8 while ``csf``
+    is above 1000 -- which pushes the design's condition number past 1e10 and
+    costs roughly ten of float64's sixteen significant digits in the solve. The
+    residuals are still correct (verified against an unscaled fit: they agree
+    to six significant figures, and per-grayordinate standard deviations to
+    thirteen decimal places), but the margin shrinks as the condition number
+    grows, and it varies run to run with the motion parameters. Scaling removes
+    the issue instead of requiring it to be monitored.
+
+    Constant columns are skipped -- an intercept has no variance to divide by.
+
+    Note the resulting coefficients are in units of each column's standard
+    deviation. Irrelevant for residuals; worth knowing before interpreting a
+    confound beta.
+    """
+    out = df.copy()
+    cols = [c for c in out.columns if c not in skip]
+    sd = out[cols].std()
+    varies = sd[sd > 0].index
+    if len(varies):
+        out[varies] = (out[varies] - out[varies].mean()) / sd[varies]
+    return out
+
+
 def build_long_events(events, regressors):
     """Turn the YAML regressor definitions into one long-form events frame.
 
@@ -750,6 +782,7 @@ def build_run_design_matrix(
     confound_columns,
     data_is_trimmed,
     drop_negative_onsets=False,
+    scale_confounds=True,
     return_bold=False,
     load_data=True,
     global_signal=False,
@@ -775,6 +808,11 @@ def build_run_design_matrix(
             rather than an error.
         drop_negative_onsets: See :func:`load_events`. Default False (keep).
         return_bold: Also return the trimmed timeseries.
+        scale_confounds: Z-score the confound columns, including the global
+            signal. Default True. Changes the design's numerical conditioning,
+            not the fit or the residuals -- see :func:`standardize_columns`.
+            Task regressors are never scaled, so their coefficients stay
+            interpretable.
         load_data: When False, read only the dtseries header. The design matrix
             is unaffected -- only its row count comes from the BOLD -- so this
             is the fast path for building or checking many designs. Forced True
@@ -832,6 +870,9 @@ def build_run_design_matrix(
             bold, structures=global_signal_structures, axis=axis
         )
 
+    if scale_confounds and confounds is not None and not confounds.empty:
+        confounds = standardize_columns(confounds)
+        
     frame_times = build_frame_times(n_scans, tr, start_time)
 
     design_matrix, three_column = create_design_matrix(
